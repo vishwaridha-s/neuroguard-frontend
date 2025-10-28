@@ -1,0 +1,31 @@
+:root,
+[data-theme='light'] {
+  --bg: #f8fafc;      /* Slightly off-white background */
+  --card-bg: #f1f5f9; /* Softer white for cards */
+  --text: #1e293b;    /* Slightly softer than pure black */
+  --primary: #5e60ce;
+  --accent: #e3e2fd;
+  --border-color: #e2e8f0; /* Added border color for consistency */
+}
+
+body, [data-theme='light'] body {
+  background: var(--bg);
+  color: var(--text);
+}
+.auth-container, .dashboard-container, .triggers-panel, .summary-widget, .profile-page, .patient-list {
+  background: var(--card-bg);
+}
+button {
+  background: var(--primary);
+  color: #fff;
+  padding: 0.7em 1.4em;
+  border: none;
+  border-radius: 8px;
+  margin: 0.3em 0.6em 0.3em 0;
+  box-shadow: 0 1px 8px var(--accent);
+  transition: background 0.2s;
+}
+button:hover {
+  filter: brightness(1.02);
+  background: #4e51c4;
+}

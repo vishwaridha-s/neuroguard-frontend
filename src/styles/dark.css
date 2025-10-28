@@ -1,0 +1,29 @@
+[data-theme='dark'] {
+  --bg: #202334;
+  --card-bg: #24263b;
+  --text: #f5f8fa;
+  --primary: #4f5fd5;
+  --accent: #223d44;
+}
+
+[data-theme='dark'] body {
+  background: var(--bg);
+  color: var(--text);
+}
+[data-theme='dark'] .auth-container,
+[data-theme='dark'] .dashboard-container,
+[data-theme='dark'] .triggers-panel,
+[data-theme='dark'] .summary-widget,
+[data-theme='dark'] .profile-page,
+[data-theme='dark'] .patient-list {
+  background: var(--card-bg);
+}
+[data-theme='dark'] button {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 16px var(--accent);
+}
+[data-theme='dark'] button:hover {
+  filter: brightness(1.15);
+  background: #7b82f2;
+}
