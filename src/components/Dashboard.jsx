@@ -41,36 +41,42 @@ const seizurePayload = {
 };
 
 export default function Dashboard() {
-  const { id } = useParams(); // patientId from router
+  const { id } = useParams();  // patientId from router
   const [summary, setSummary] = useState(null);
   const [vitals, setVitals] = useState([]);
   const [monitorActive, setMonitorActive] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch summary & vitals on load
+  // Fetch summary & initial vitals
   useEffect(() => {
     apiFetch(`/patient/${id}/summary`).then(setSummary).catch(console.error);
     apiFetch(`/patient/${id}/vitals`).then(v => setVitals(Array.isArray(v) ? v : []))
       .catch(console.error);
   }, [id]);
 
-  // Live polling for ESP32 monitor
+  // Live polling to accumulate last 50 unique vitals readings
   useEffect(() => {
     if (!monitorActive) return;
+
     const interval = setInterval(async () => {
       try {
         const live = await apiFetch(`/vitals/monitor/latest`);
-        if (live && !live.error) {
-          setVitals(v => ([live, ...v.filter(x => x._id !== live._id)]));
+        if (live && live.timestamp) {
+          setVitals(prev => {
+            if (prev.find(v => v.timestamp === live.timestamp)) {
+              return prev;  // skip duplicates
+            }
+            return [...prev, live].slice(-50);  // keep sliding window of 50 samples
+          });
         }
       } catch (err) {
         console.error('Live monitor error:', err);
       }
-    }, 2000);
+    }, 500);
+
     return () => clearInterval(interval);
   }, [monitorActive]);
 
-  // Send vitals with geolocation
   const sendVitals = async (payload) => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -93,7 +99,6 @@ export default function Dashboard() {
     );
   };
 
-  // Monitor button: only sends patientId + location to backend
   const initMonitor = async () => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -114,7 +119,18 @@ export default function Dashboard() {
 
   const stopMonitor = () => setMonitorActive(false);
 
-  // Sidebar routes
+  const buttonStyle = (startColor, endColor) => ({
+    background: `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`,
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    padding: '1rem 1.5rem',
+    fontWeight: '600',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    boxShadow: `0 4px 12px ${startColor}80`,
+  });
+
   const routes = [
     { path: `/dashboard/patient/${id}`, label: 'Dashboard', icon: '🏠' },
     { path: `/profile/patient/${id}`, label: 'Profile', icon: '👤' },
@@ -128,104 +144,37 @@ export default function Dashboard() {
           <h1>Patient Dashboard</h1>
           <p className="subtitle">Real-time monitoring and health insights</p>
         </div>
-        {/* Quick Actions Bar at the top */}
+
+        {/* Quick Actions */}
         <div className="quick-actions" style={{
-          display: 'flex',
-          gap: '1rem',
-          marginBottom: '2rem',
-          flexWrap: 'wrap',
+          display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap'
         }}>
-          <button
-            onClick={() => sendVitals(normalPayload)}
-            style={{
-              background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '1rem 1.5rem',
-              fontWeight: '600',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(76,175,80,0.3)'
-            }}
-          >✅ Normal</button>
-          <button
-            onClick={() => sendVitals(panicPayload)}
-            style={{
-              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '1rem 1.5rem',
-              fontWeight: '600',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(255,152,0,0.3)'
-            }}
-          >⚠️ Panic</button>
-          <button
-            onClick={() => sendVitals(seizurePayload)}
-            style={{
-              background: 'linear-gradient(135deg, #e53935 0%, #c62828 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '1rem 1.5rem',
-              fontWeight: '600',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(229,57,53,0.3)'
-            }}
-          >🚨 Seizure</button>
+          <button onClick={() => sendVitals(normalPayload)} style={buttonStyle('#4caf50', '#45a049')}>✅ Normal</button>
+          <button onClick={() => sendVitals(panicPayload)} style={buttonStyle('#ff9800', '#f57c00')}>⚠️ Panic</button>
+          <button onClick={() => sendVitals(seizurePayload)} style={buttonStyle('#e53935', '#c62828')}>🚨 Seizure</button>
           {!monitorActive ? (
-            <button
-              onClick={initMonitor}
-              style={{
-                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '1rem 1.5rem',
-                fontWeight: '600',
-                fontSize: '1rem',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(33,150,243,0.3)'
-              }}
-            >📱 Monitor (ESP32)</button>
+            <button onClick={initMonitor} style={buttonStyle('#2196f3', '#1976d2')}>📱 Monitor (ESP32)</button>
           ) : (
-            <button
-              onClick={stopMonitor}
-              style={{
-                background: 'linear-gradient(135deg, #333 0%, #666 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '1rem 1.5rem',
-                fontWeight: '600',
-                fontSize: '1rem',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(33,33,33,0.3)'
-              }}
-            >⛔ Stop Monitoring</button>
+            <button onClick={stopMonitor} style={buttonStyle('#333', '#666')}>⛔ Stop Monitoring</button>
           )}
         </div>
+
         <div className="dashboard-grid">
-          {/* SummaryWidget - full width */}
           <div className="dashboard-section" style={{ gridColumn: '1 / -1' }}>
             <SummaryWidget summary={summary} />
           </div>
-          {/* VitalsChart - full width */}
           <div className="dashboard-section" style={{ gridColumn: '1 / -1' }}>
             <VitalsChart
               data={vitals}
               patientId={id}
               onStartMonitor={initMonitor}
               onStopMonitor={stopMonitor}
-              onTriggerAlert={() => {/* Optional extra alert */}}
+              onTriggerAlert={() => {}}
             />
           </div>
         </div>
       </main>
+
       <style>{`
         .dashboard-container {
           display: flex;

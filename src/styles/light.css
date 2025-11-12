@@ -6,6 +6,16 @@
   --primary: #5e60ce;
   --accent: #e3e2fd;
   --border-color: #e2e8f0; /* Added border color for consistency */
+  
+  /* Sidebar specific variables */
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #64748b;
+  --sidebar-brand: #1e293b;
+  --sidebar-border: rgba(0, 0, 0, 0.1);
+  --sidebar-active-bg: rgba(94, 96, 206, 0.1);
+  --sidebar-active-text: #5e60ce;
+  --sidebar-hover-bg: rgba(94, 96, 206, 0.05);
+  --sidebar-hover-text: #1e293b;
 }
 
 body, [data-theme='light'] body {

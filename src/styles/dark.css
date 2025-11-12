@@ -4,6 +4,16 @@
   --text: #f5f8fa;
   --primary: #4f5fd5;
   --accent: #223d44;
+  
+  /* Sidebar specific variables */
+  --sidebar-bg: #1a1b2e;
+  --sidebar-text: #94a3b8;
+  --sidebar-brand: #f8fafc;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-active-bg: rgba(79, 95, 213, 0.2);
+  --sidebar-active-text: #4f5fd5;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-hover-text: #f8fafc;
 }
 
 [data-theme='dark'] body {

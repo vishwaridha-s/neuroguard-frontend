@@ -346,7 +346,7 @@ export default function AuthLanding({ signup, theme }) {
         </div>
 
         <h1 style={{ fontSize: '3.5rem', fontWeight: '800' }}>
-          Welcome to <span style={{ color: '#4F46E5' }}>NeuroGuard</span>
+          Your Space, Your Control<span style={{ color: '#4F46E5' }}>NeuroGuard</span>
         </h1>
         <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>
           Predict. Protect. Empower.
