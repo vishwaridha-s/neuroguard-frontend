@@ -54,7 +54,7 @@ export default function Dashboard() {
       .catch(console.error);
   }, [id]);
 
-  // Live polling to accumulate last 50 unique vitals readings
+  // Live polling to accumulate last 50 readings (flowing chart)
   useEffect(() => {
     if (!monitorActive) return;
 
@@ -62,17 +62,12 @@ export default function Dashboard() {
       try {
         const live = await apiFetch(`/vitals/monitor/latest`);
         if (live && live.timestamp) {
-          setVitals(prev => {
-            if (prev.find(v => v.timestamp === live.timestamp)) {
-              return prev;  // skip duplicates
-            }
-            return [...prev, live].slice(-50);  // keep sliding window of 50 samples
-          });
+          setVitals(prev => [...prev, live].slice(-50)); // keep last 50 readings
         }
       } catch (err) {
         console.error('Live monitor error:', err);
       }
-    }, 500);
+    }, 1000); // 1 second polling
 
     return () => clearInterval(interval);
   }, [monitorActive]);
@@ -91,7 +86,7 @@ export default function Dashboard() {
         });
         alert('Vitals sent!');
         if (response?.vitals) {
-          setVitals(v => [response.vitals, ...v]);
+          setVitals(v => [...v, response.vitals].slice(-50));
           apiFetch(`/patient/${id}/summary`).then(setSummary).catch(console.error);
         }
       },
